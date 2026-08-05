@@ -21,11 +21,14 @@ jobs:
       - name: Build exe
         run: pyinstaller MusicDL.spec --noconfirm
 
-      - name: Upload to Release
+      - name: Configure GitHub CLI
+        run: |
+          gh auth setup-git
+
+      - name: Upload to GitHub Release
         if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pip install githubrelease
-          githubrelease create Chen198705/MusicDL-Win "v1.0.0" --name "MusicDL v1.0.0" --body "Windows executable" --replace || true
-          githubrelease upload Chen198705/MusicDL-Win "v1.0.0" dist/MusicDL.exe || true
+          gh release view v1.0.0 --repo Chen198705/MusicDL-Win && echo "exists" || gh release create v1.0.0 --repo Chen198705/MusicDL-Win --title "MusicDL v1.0.0" --notes "Windows executable built via GitHub Actions"
+          gh release upload v1.0.0 dist/MusicDL.exe --repo Chen198705/MusicDL-Win --clobber
