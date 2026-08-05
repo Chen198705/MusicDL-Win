@@ -15,21 +15,22 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install PyInstaller
-        run: pip install pyinstaller
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller PySimpleGUI yt-dlp
 
       - name: Build exe
         run: |
-          pyinstaller --version
-          mkdir dist build
-          pyinstaller MusicDL.spec --noconfirm
-          dir dist
+          pyinstaller MusicDL.spec --noconfirm 2>&1 | tee build_log.txt
+          echo "EXIT_CODE=%ERRORLEVEL%" >> %GITHUB_ENV%
 
-      - name: Show result
-        run: |
-          echo Build output:
-          dir dist
-          if exist dist\MusicDL.exe (echo SUCCESS: MusicDL.exe found) else (echo FAILED: MusicDL.exe NOT found)
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build_log.txt
+          retention-days: 1
 
       - name: Upload artifact
         if: success()
