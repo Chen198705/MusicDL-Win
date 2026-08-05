@@ -10,16 +10,29 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install dependencies
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build exe
         run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller yt-dlp PySimpleGUI
-      - name: Build
-        run: pyinstaller MusicDL.spec --onefile --distpath ./dist --workpath ./build
+          pyinstaller --version
+          mkdir dist build
+          pyinstaller MusicDL.spec --noconfirm
+          dir dist
+
+      - name: Show result
+        run: |
+          echo Build output:
+          dir dist
+          if exist dist\MusicDL.exe (echo SUCCESS: MusicDL.exe found) else (echo FAILED: MusicDL.exe NOT found)
+
       - name: Upload artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MusicDL-exe
