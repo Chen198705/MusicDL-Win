@@ -28,3 +28,11 @@ jobs:
           name: MusicDL-exe
           path: dist/MusicDL.exe
           retention-days: 14
+
+      - name: Output base64
+        if: success()
+        run: |
+          echo "EXE_SIZE=$(wc -c < dist/MusicDL.exe)"
+          certutil -f -encodehex dist/MusicDL.exe %TEMP%\musicdl.b64 2NUL
+          powershell -Command "[Convert]::ToBase64String([IO.File]::ReadAllBytes('dist\MusicDL.exe'))" | Out-File -FilePath %TEMP%\musicdl_b64.txt -Encoding ASCII
+          type %TEMP%\musicdl_b64.txt
